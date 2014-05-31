@@ -2,6 +2,7 @@ import logging
 from django.http import HttpResponseForbidden
 from django.template import RequestContext, loader
 
+
 class Templated403(object):
     """
     Replaces vanilla django.http.HttpResponseForbidden() responses
@@ -13,6 +14,7 @@ class Templated403(object):
             t = loader.get_template('403.html')
             return HttpResponseForbidden(t.render(RequestContext(request)))
         return response
+
 
 class RequestLoggingMiddleware(object):
     logger = logging.getLogger('django.request')

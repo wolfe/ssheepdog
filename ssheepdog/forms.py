@@ -1,9 +1,11 @@
 from django import forms
 from ssheepdog import models
 
+
 class AccessFilterForm(forms.Form):
     user = forms.CharField(label="User", required=False)
     login = forms.CharField(label="Login/Machine", required=False)
+
 
 class LoginForm(forms.ModelForm):
     named_application_key = forms.ModelChoiceField(
@@ -18,6 +20,7 @@ class LoginForm(forms.ModelForm):
         SSHeepdog will overwrite the named key the latest SSHeepdog key on the
         next deployment.
         """)
+
     class Meta:
         model = models.Login
 
@@ -31,6 +34,7 @@ class LoginForm(forms.ModelForm):
         if commit:
             obj.save()
         return obj
+
 
 class UserProfileForm(forms.ModelForm):
     class Meta:

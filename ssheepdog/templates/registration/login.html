@@ -5,7 +5,7 @@
 
 {% block content %}
   <h1>{% trans "Login" %}</h1>
-  
+
 {% if not user.is_anonymous %}
   {% trans "You are currently logged in." %}&nbsp;
   <a href="{% url 'logout' %}">{% trans "Log Out" %}</a>
@@ -15,7 +15,6 @@
   <div id="login_form">
   	<form method="post" action="">
   	    {% csrf_token %}
-		
         <ul>
             {{ form.as_ul }}
             <li>

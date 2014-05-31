@@ -3,6 +3,7 @@ from django.db.models import TextField
 from django.core import exceptions
 from django.utils.translation import ugettext as _
 
+
 class PublicKeyField(TextField):
     def validate(self, value, model_instance):
         """
@@ -10,7 +11,7 @@ class PublicKeyField(TextField):
         """
         def _validate_key(value):
             """
-            Just confirm that the first field is something like ssh-rsa or ssh-dss,
+            Confirm that the first field is something like ssh-rsa or ssh-dss,
             and the second field is reasonably long and can be base64 decoded.
             """
             if value.strip() == "":

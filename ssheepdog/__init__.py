@@ -6,8 +6,10 @@ from StringIO import StringIO
 from django.contrib.auth.models import User as AdminUser
 from django.core.urlresolvers import reverse
 
+
 class User(AdminUser):
     __metaclass__ = monkeypatch_class
+
     def get_change_url(self):
         return reverse('admin:auth_user_change', args=(self.pk,))
 
@@ -23,11 +25,13 @@ class User(AdminUser):
              # Create one!
             from ssheepdog.models import UserProfile
             UserProfile.objects.create(user=self)
-            return User.objects.get(pk=self.pk).get_profile().nickname or self.email
+            return (User.objects.get(pk=self.pk).get_profile().nickname
+                    or self.email)
 
     def save(self, *args, **kwargs):
         """
-        If is_active was changed, then associated Logins need to be flagged as is_dirty
+        If is_active was changed, then associated Logins
+        need to be flagged as is_dirty
         """
         if self.pk and (self._was_active != self.is_active):
             from models import Login
@@ -37,12 +41,13 @@ class User(AdminUser):
 
 class PKey(pkey.PKey):
     __metaclass__ = monkeypatch_class
+
     def _read_private_key_file(self, tag, filename, password=None):
         """
         Augment behaviour so that if the filename looks like a key, use it
         rather than attempting to read from a file.
         """
-        if len(filename) > 300: # Assume it's already a key
+        if len(filename) > 300:  # Assume it's already a key
             f = StringIO(filename)
         else:
             f = open(filename, 'r')

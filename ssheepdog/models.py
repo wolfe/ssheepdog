@@ -1,4 +1,5 @@
-import os, base64
+import os
+import base64
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, m2m_changed
@@ -24,9 +25,11 @@ KEYS_DIR = os.path.join(os.path.dirname(__file__),
 ALL_FABRIC_WARNINGS = ['everything', 'status', 'aborts']
 FABRIC_WARNINGS = []
 
+
 class UserProfile(DirtyFieldsMixin, models.Model):
     nickname = models.CharField(max_length=256)
-    user = models.OneToOneField(User, primary_key=True, related_name='_profile_cache')
+    user = models.OneToOneField(User, primary_key=True,
+                                related_name='_profile_cache')
     ssh_key = PublicKeyField(blank=True)
 
     @property
@@ -44,7 +47,9 @@ class UserProfile(DirtyFieldsMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if 'ssh_key' in self.get_dirty_fields():
-            Login.objects.filter(users___profile_cache=self).update(is_dirty=True)
+            (Login.objects
+             .filter(users___profile_cache=self)
+             .update(is_dirty=True))
 
         super(UserProfile, self).save(*args, **kwargs)
 
@@ -105,6 +110,7 @@ class LoginLog(models.Model):
     stdout = models.TextField(default="")
     login = models.ForeignKey('Login', null=True)
     actor = models.ForeignKey(User, null=True)
+
     class Meta:
         ordering = ['-date']
 
@@ -114,17 +120,19 @@ class Login(DirtyFieldsMixin, models.Model):
     username = models.CharField(max_length=256)
     users = models.ManyToManyField(User, blank=True)
     client = models.ForeignKey('Client', null=True, blank=True)
-    application_key = models.ForeignKey('ApplicationKey', null=True, verbose_name="SSHeepdog Public Key")
+    application_key = models.ForeignKey('ApplicationKey', null=True,
+                                        verbose_name="SSHeepdog Public Key")
     is_active = models.BooleanField(default=True)
     is_dirty = models.BooleanField(default=True)
-    additional_public_keys = PublicKeyField(blank=True,
+    additional_public_keys = PublicKeyField(
+        blank=True,
         help_text=_("These are public keys which will be pushed to the login"
                     " in addition to user keys."))
 
     class Meta:
         ordering = ('username', 'client__nickname',)
 
-        permissions = ( # Managed by South so added by data migration!
+        permissions = (  # Managed by South so added by data migration!
             ("can_view_access_summary", "Can view access summary"),
             ("can_sync", "Can sync login keys"),
             ("can_edit_own_public_key", "Can edit one's own public key"),
@@ -133,7 +141,8 @@ class Login(DirtyFieldsMixin, models.Model):
             )
 
     def get_address(self):
-        return "%s@%s" % (self.username, self.machine.ip or self.machine.hostname)
+        return "%s@%s" % (self.username,
+                          self.machine.ip or self.machine.hostname)
 
     def get_last_log(self):
         try:
@@ -188,9 +197,11 @@ class Login(DirtyFieldsMixin, models.Model):
         mach = self.machine
         env.abort_on_prompts = True
         env.reject_unknown_hosts = False
-        # TODO:  Squash potential man-in-middle attack!  Bottom of http://docs.fabfile.org/en/1.3.4/usage/ssh.html
+        # TODO:  Squash potential man-in-middle attack!
+        # Bottom of http://docs.fabfile.org/en/1.3.4/usage/ssh.html
         env.disable_known_hosts = True
-        env.key_filename = private_key or ApplicationKey.get_latest().private_key
+        env.key_filename = (private_key
+                            or ApplicationKey.get_latest().private_key)
         env.host_string = "%s@%s:%d" % (self.username,
                                         (mach.ip or mach.hostname),
                                         mach.port)
@@ -222,7 +233,7 @@ class Login(DirtyFieldsMixin, models.Model):
                 keys.append("## Additional keys specified in Login\n%s"
                             % self.additional_public_keys)
             for user in (self.users
-                         .filter(is_active = True)
+                         .filter(is_active=True)
                          .select_related('_profile_cache')):
                 keys.append(user.get_profile().formatted_public_key)
         return keys
@@ -251,11 +262,12 @@ class Login(DirtyFieldsMixin, models.Model):
         if self.machine.is_down or self.machine.manual or not self.is_dirty:
             # No update required (either impossible or not needed)
             return None
-        success, output = self.run("echo '%s' > ~/.ssh/authorized_keys" % self.formatted_keys(),
+        success, output = self.run("echo '%s' > ~/.ssh/authorized_keys"
+                                   % self.formatted_keys(),
                                    self.get_application_key().private_key)
 
-        message="%successful %s" % ("S" if success else "Uns",
-                                    "key deployment")
+        message = "%successful %s" % ("S" if success else "Uns",
+                                      "key deployment")
         LoginLog.objects.create(stderr=output.stderr,
                                 stdout=output.stdout,
                                 actor=actor,
@@ -306,6 +318,7 @@ class NamedApplicationKey(models.Model):
             key.save()
             self.application_key = key
         super(NamedApplicationKey, self).save(*args, **kwargs)
+
 
 class ApplicationKey(models.Model):
     private_key = models.TextField()
@@ -360,7 +373,9 @@ class ApplicationKey(models.Model):
     def get_latest(create_new=False):
         if not create_new:
             try:
-                return ApplicationKey.objects.exclude(is_named=True).latest('pk')
+                return (ApplicationKey.objects
+                        .exclude(is_named=True)
+                        .latest('pk'))
             except ApplicationKey.DoesNotExist:
                 pass
         key = ApplicationKey()
@@ -372,7 +387,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         try:
             UserProfile.objects.create(user=instance)
-        except DatabaseError: # Creating fresh db from manage.py
+        except DatabaseError:  # Creating fresh db from manage.py
             pass
 
 
@@ -396,4 +411,3 @@ def force_one_app_key(app, **kwargs):
         ApplicationKey.get_latest()
 
 post_migrate.connect(force_one_app_key)
-
