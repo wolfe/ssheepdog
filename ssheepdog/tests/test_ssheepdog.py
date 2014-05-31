@@ -4,10 +4,10 @@ from ssheepdog.models import Client, Login, Machine, ApplicationKey
 from ssheepdog.fields import PublicKeyField
 from ssheepdog.views import view_access_summary
 import os
-import settings.test as app_settings
+from ssheepdog.settings import test as app_settings
 from fabric.network import disconnect_all
 from ssheepdog.models import KEYS_DIR
-from utils import read_file
+from ssheepdog.utils import read_file
 from fabric.api import run, env, hide, settings, local
 from django.core import exceptions
 from django.http import HttpRequest
@@ -156,7 +156,7 @@ def sync_all():
     Login.sync_all()
 
 class NumQueriesTest(TestCase):
-    urls = 'ssheepdog.test_urls'
+    urls = 'ssheepdog.tests.urls'
 
     def setUp(self):
         self.users = [create_user(username='user_%d' % i) for i in range(1,4)]

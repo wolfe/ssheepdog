@@ -38,11 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'django_versioned',
-    'raven.contrib.django.raven_compat',
-    'debug_toolbar',
-    'compressor',
-    'crispy_forms',
     'south',
     'ssheepdog',
     'aws_policy_manager',
