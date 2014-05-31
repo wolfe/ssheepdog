@@ -67,8 +67,8 @@ def create_user(**kwargs):
 
 create_machine = call_with_defaults(nickname='machine',
                                     hostname='machine.ca',
-                                    ip='127.0.0.1',
-                                    port=2222,
+                                    ip='192.168.33.10',
+                                    port=22,
                                     description='Test Machine',
                                     is_active=True
                                     )(Machine.objects.create)
@@ -92,7 +92,7 @@ class VagrantTests(TestCase):
         with settings(hide('everything', 'status')):
             env.key_filename = local('vagrant ssh-config | grep IdentityFile',
                                      capture=True).split()[1].strip('"')
-            env.host_string = 'vagrant@127.0.0.1:2222'
+            env.host_string = 'vagrant@192.168.33.10:22'
             for u in ['login']:
                 run('sudo bash -c "echo %s > ~%s/.ssh/authorized_keys"' % (
                     read_file(os.path.join(KEYS_DIR, "ssheepdog.pub")).strip(), u))
@@ -106,7 +106,7 @@ class VagrantTests(TestCase):
         Make sure that application can connect
         """
         env.key_filename = os.path.join(KEYS_DIR, 'ssheepdog')
-        env.host_string = 'login@127.0.0.1:2222'
+        env.host_string = 'login@192.168.33.10:22'
         with hide('everything'):
             run('ls')
 
@@ -156,6 +156,8 @@ def sync_all():
     Login.sync_all()
 
 class NumQueriesTest(TestCase):
+    urls = 'ssheepdog.test_urls'
+
     def setUp(self):
         self.users = [create_user(username='user_%d' % i) for i in range(1,4)]
         self.machines = [create_machine() for i in range(10)]
@@ -167,7 +169,7 @@ class NumQueriesTest(TestCase):
     def test_access_summary_constant_queries(self):
         request = HttpRequest()
         request.user = create_user(username="ssheepdog", is_superuser=True)
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             view_access_summary(request)
 
 

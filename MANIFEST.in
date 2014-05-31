@@ -1,0 +1,4 @@
+include AUTHORS
+include BSD-LICENSE.txt
+include README.md
+recursive-include ssheepdog *
