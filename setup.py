@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 f = open('README.md')
 readme = f.read()
@@ -12,6 +12,8 @@ setup(
     long_description=readme,
     author='David Wolfe',
     author_email='davidgameswolfe@gmail.com',
+    packages=find_packages(exclude=['tests']),
+    include_package_data=True,
     url='https://github.com/wolfe/ssheepdog/',
     license='BSD',
     classifiers=[
