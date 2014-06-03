@@ -11,6 +11,7 @@ NEW_PERMISSIONS = ( # Managed by South so added by data migration!
     )
 
 class Migration(SchemaMigration):
+    no_dry_run = True
 
     def forwards(self, orm):
         # Adding field 'Login.additional_public_keys'
