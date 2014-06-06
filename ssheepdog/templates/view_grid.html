@@ -10,7 +10,6 @@
   </form>
 </div>
 
-{% if logins and users %}
 <table class="access_view table-bordered">
     <thead>
         <tr class="top_header">
@@ -90,8 +89,9 @@
 </form>
 {% endif %}
 
+{% if logins and users %}
 {% else %}
-  <p>No {% if logins %}users{% else %}logins{% endif %}</p>
+  <p>No viewable {% if logins %}users{% else %}logins{% endif %}</p>
 {% endif %}
 
 <div id="modal" class="modal hide fade">
