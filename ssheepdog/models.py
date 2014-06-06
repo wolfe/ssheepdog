@@ -30,7 +30,7 @@ class UserProfile(DirtyFieldsMixin, models.Model):
     nickname = models.CharField(max_length=256)
     user = models.OneToOneField(User, primary_key=True,
                                 related_name='_profile_cache')
-    ssh_key = PublicKeyField(blank=True)
+    ssh_key = PublicKeyField(verbose_name='Public SSH Key', blank=True)
 
     @property
     def formatted_public_key(self):
