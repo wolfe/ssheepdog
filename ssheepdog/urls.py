@@ -13,4 +13,5 @@ urlpatterns = patterns(
         'ssheepdog.views.change_access'),
     url(r'^user/(?P<id>[0-9]+)/$', 'ssheepdog.views.user_admin_view'),
     url(r'^login/(?P<id>[0-9]+)/$', 'ssheepdog.views.login_admin_view'),
+    url(r'^api/machine/$', 'ssheepdog.views.create_machine_via_api'),
 )

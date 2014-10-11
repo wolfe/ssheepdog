@@ -1,12 +1,17 @@
+import json
+
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from ssheepdog.models import Login
 from django.contrib.auth.decorators import user_passes_test, login_required
-from ssheepdog.forms import UserProfileForm, AccessFilterForm
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.forms import Form as EmptyForm
+from django.http import HttpResponse, HttpResponseBadRequest
+
+from ssheepdog import models
+from ssheepdog.models import Login
+from ssheepdog.forms import UserProfileForm, AccessFilterForm
 
 
 def permission_required(perm, login_url=None, raise_exception=True):
@@ -176,3 +181,48 @@ def change_access(request, action, user_pk, login_pk):
                               {'user': user, 'form': form,
                                'login': login, 'action': action},
                               context_instance=RequestContext(request))
+
+
+def _sanity_checks(data):
+    keys = ['username', 'hostname', 'ip', 'application_key_name']
+    assert set(data.keys()) >= set(keys), (
+        'Post must include %s and may include client_name' % ', '.join(keys))
+    if 'client_name' in data.keys():
+        keys.append('client_name')
+    for key in keys:
+        assert isinstance(data[key], basestring), '%s must be a string' % key
+        assert len(data[key]) > 0, '%s cannot be empty' % key
+    query = models.NamedApplicationKey.objects.filter(
+        nickname=data['application_key_name'])
+    assert query.count() == 1, 'Named application key does not exist'
+    data['application_key'] = query.get().application_key
+    assert (models.Machine.objects.filter(ip=data['ip'])
+            .count() == 0), 'Machine with ip already exists'
+    assert (models.Machine.objects.filter(hostname=data['hostname'])
+            .count() == 0), 'Machine with hostname already exists'
+
+
+def create_machine_via_api(request):
+    """
+    Validate with simple shared secret.
+    API cannot do much harm in any event, since it can only
+    give us more power over machines.
+    """
+    try:
+        assert request.method == 'POST', 'Request must be a POST'
+        data = json.loads(request.raw_post_data)
+        _sanity_checks(data)  # Adds application_key
+    except AssertionError as e:
+        return HttpResponseBadRequest(str(e))
+    client, _ = (models.Client.objects
+                 .get_or_create(nickname=data['client_name'])
+                 if data.get('client_name') else None)
+    models.Login.objects.create(
+        machine=models.Machine.objects.create(
+            ip=data['ip'],
+            hostname=data['hostname'],
+            client=client,
+            nickname=data['hostname']),
+        username=data['username'],
+        application_key=data['application_key'])
+    return HttpResponse('Machine entry created', status=201)
