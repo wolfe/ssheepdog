@@ -78,6 +78,9 @@ class Machine(DirtyFieldsMixin, models.Model):
             parenthetical = self.hostname or self.ip
         return "%s (%s)" % (self.nickname, parenthetical)
 
+    def link(self):
+        return "http://%s" % (self.hostname or self.ip)
+
     def get_change_url(self):
         return reverse('admin:ssheepdog_machine_change', args=(self.pk,))
 
@@ -304,20 +307,11 @@ class NamedApplicationKey(models.Model):
     """
     # Note that the above comment
     nickname = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
+    description = models.TextField()
     application_key = models.ForeignKey('ApplicationKey')
 
     def __unicode__(self):
         return self.nickname
-
-    def save(self, *args, **kwargs):
-        if not (self.nickname and self.description):
-            raise ValidationError("Nickname and description are required")
-        if not self.pk:
-            key = ApplicationKey(is_named=True)
-            key.save()
-            self.application_key = key
-        super(NamedApplicationKey, self).save(*args, **kwargs)
 
 
 class ApplicationKey(models.Model):
@@ -345,7 +339,8 @@ class ApplicationKey(models.Model):
         self.private_key = key.exportKey()
 
         # This magic is from
-        # http://stackoverflow.com/questions/2466401/how-to-generate-ssh-key-pairs-with-python
+        # http://stackoverflow.com/questions/
+        #   2466401/how-to-generate-ssh-key-pairs-with-python
 
         exponent = '%x' % (key.e, )
         if len(exponent) % 2:

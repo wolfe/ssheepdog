@@ -39,6 +39,8 @@ admin.site.register(models.Machine, MachineAdmin)
 
 class NamedApplicationKeyAdmin(admin.ModelAdmin):
     model = models.NamedApplicationKey
+    form = forms.NamedApplicationForm
+    readonly_fields = ('public_key',)
     fieldsets = (
         (None, {'fields': (),
                 'description':
@@ -49,8 +51,13 @@ class NamedApplicationKeyAdmin(admin.ModelAdmin):
                    start key."""
                 "<br/>&nbsp;"
                 }),
-        (None, {'fields': ('nickname', 'description')}),)
+        (None, {'fields': ('nickname', 'description',
+                           'public_key', 'private_key')}),)
     exclude = ['application_key']
+
+    def public_key(self, obj):
+        return obj.application_key and obj.application_key.public_key or ''
+
 admin.site.register(models.NamedApplicationKey, NamedApplicationKeyAdmin)
 
 
