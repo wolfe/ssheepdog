@@ -52,7 +52,7 @@
                     {% endif %}
                 </td>
                 <td title="{{ login.client.description }}">{{ login.client.nickname }}</td>
-                <td title="{{ login.machine.description }}">{{ login.machine.nickname }}</td>
+                <td title="{{ login.machine.description }}"><a target="_blank" href='{{ login.machine.link }}'>{{ login.machine.nickname }}</a></td>
                 <td title="{{ login.description }}"> <a class="open-modal-form" href="{% url 'ssheepdog.views.login_admin_view' login.pk %}"> {{login.username}} </a></td>
 
                 {% for entry in login.entries %}

@@ -78,6 +78,9 @@ class Machine(DirtyFieldsMixin, models.Model):
             parenthetical = self.hostname or self.ip
         return "%s (%s)" % (self.nickname, parenthetical)
 
+    def link(self):
+        return "http://%s" % (self.hostname or self.ip)
+
     def get_change_url(self):
         return reverse('admin:ssheepdog_machine_change', args=(self.pk,))
 
