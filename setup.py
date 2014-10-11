@@ -6,7 +6,7 @@ f.close()
 
 setup(
     name='ssheepdog',
-    version='1.0',
+    version='1.1',
     description=('ssheepdog is an app to manage ssh authorized_keys'
                  ' files using scp.'),
     long_description=readme,
