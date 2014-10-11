@@ -304,21 +304,11 @@ class NamedApplicationKey(models.Model):
     """
     # Note that the above comment
     nickname = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
+    description = models.TextField()
     application_key = models.ForeignKey('ApplicationKey')
 
     def __unicode__(self):
         return self.nickname
-
-    def save(self, *args, **kwargs):
-        if not (self.nickname and self.description):
-            raise ValidationError("Nickname and description are required")
-        if not self.pk:
-            key = ApplicationKey(is_named=True)
-            key.save()
-            self.application_key = key
-        super(NamedApplicationKey, self).save(*args, **kwargs)
-
 
 class ApplicationKey(models.Model):
     private_key = models.TextField()
