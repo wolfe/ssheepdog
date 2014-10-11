@@ -313,6 +313,7 @@ class NamedApplicationKey(models.Model):
     def __unicode__(self):
         return self.nickname
 
+
 class ApplicationKey(models.Model):
     private_key = models.TextField()
     public_key = PublicKeyField()
@@ -338,7 +339,8 @@ class ApplicationKey(models.Model):
         self.private_key = key.exportKey()
 
         # This magic is from
-        # http://stackoverflow.com/questions/2466401/how-to-generate-ssh-key-pairs-with-python
+        # http://stackoverflow.com/questions/
+        #   2466401/how-to-generate-ssh-key-pairs-with-python
 
         exponent = '%x' % (key.e, )
         if len(exponent) % 2:
